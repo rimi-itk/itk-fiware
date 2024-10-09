@@ -5,12 +5,23 @@ dotenv: ['.env.local', '.env']
 
 vars:
   DOCKER_COMPOSE: '{{ .TASK_DOCKER_COMPOSE | default "docker compose" }}'
+  BASE_URL: '{{ .TASK_BASE_URL | default "https://itk-fiware.local.itkdev.dk" }}'
 
 tasks:
   start:
     cmds:
       - task compose -- pull
-      - task compose -- up --detach --build --remove-orphans
+      - task compose -- up --detach --build --remove-orphans --wait
+    silent: true
+
+  url:
+    cmds:
+      - echo {{ .BASE_URL }}
+    silent: true
+
+  open:
+    cmds:
+      - if command -v open 2>&1 >/dev/null; then open "$(task url)"; else echo "$(task url)"; fi
     silent: true
 
   compose:

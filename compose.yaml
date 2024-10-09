@@ -8,3 +8,21 @@ networks:
   app:
     driver: bridge
     internal: false
+
+services:
+  php:
+    networks:
+      - frontend
+    # https://frankenphp.dev/
+    image: dunglas/frankenphp
+    # build: .
+    ports:
+      - '80'
+      # - '443'
+      # - '443/udp'
+    volumes:
+      - .:/app
+    # https://github.com/dunglas/frankenphp/discussions/718#discussioncomment-9248605
+    environment:
+      # https://github.com/dunglas/frankenphp/discussions/718#discussioncomment-10020209
+      SERVER_NAME: 'http://' # make sure it does not serve over HTTPS because the reverse proxy already fixes this for you
