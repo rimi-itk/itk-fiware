@@ -1,0 +1,10 @@
+# https://docs.docker.com/compose/how-tos/multiple-compose-files/include/
+include:
+  - compose.scorpio.yaml
+
+networks:
+  frontend:
+    external: true
+  app:
+    driver: bridge
+    internal: false

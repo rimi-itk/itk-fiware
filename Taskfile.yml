@@ -1,0 +1,18 @@
+version: '3'
+
+# https://taskfile.dev/usage/#env-files
+dotenv: ['.env.local', '.env']
+
+vars:
+  DOCKER_COMPOSE: '{{ .TASK_DOCKER_COMPOSE | default "docker compose" }}'
+
+tasks:
+  start:
+    cmds:
+      - task compose -- pull
+      - task compose -- up --detach --build --remove-orphans
+    silent: true
+
+  compose:
+    cmds:
+      - '{{ .DOCKER_COMPOSE }} {{ .CLI_ARGS }}'

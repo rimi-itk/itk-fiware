@@ -1,0 +1,64 @@
+# https://quay.io/repository/fiware/scorpio
+# https://raw.githubusercontent.com/ScorpioBroker/ScorpioBroker/development-quarkus/compose-files/docker-compose-java-aaio-kafka.yml
+
+networks:
+  scorpio:
+
+services:
+  zookeeper:
+    image: zookeeper
+    networks:
+      - scorpio
+    ports:
+      - "2181"
+
+  kafka:
+    image: bitnami/kafka:3.5.1-debian-11-r6
+    networks:
+      - scorpio
+    ports:
+      - "9092"
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_PORT: 9092
+      KAFKA_LOG_RETENTION_MS: 10000
+      KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS: 5000
+      ALLOW_PLAINTEXT_LISTENER: "yes"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - zookeeper
+
+  postgres:
+    image: postgis/postgis
+    networks:
+      - scorpio
+    ports:
+      - "5432"
+    environment:
+      POSTGRES_USER: ngb
+      POSTGRES_PASSWORD: ngb
+      POSTGRES_DB: ngb
+
+  scorpio:
+    image: scorpiobroker/all-in-one-runner:java-kafka-latest
+    networks:
+      - scorpio
+      - frontend
+    ports:
+      - "9090"
+    environment:
+      DBHOST: postgres
+      BUSHOST: kafka
+    depends_on:
+      - postgres
+      - kafka
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=frontend"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}_scorpio.rule=Host(`scorpio.${COMPOSE_DOMAIN}`)"
+      - "traefik.http.services.${COMPOSE_PROJECT_NAME}_scorpio.loadbalancer.server.port=9090"
+      # HTTPS config - uncomment to enable redirect from :80 to :443
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}_scorpio.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
