@@ -10,6 +10,8 @@ function buildUrl(?string $subdomain = null, ?string $path = null, ?array $query
 $title = 'ITK FIWARE';
 $links = [
     'Scorpio (/ngsi-ld/v1/types)' => buildUrl(subdomain: 'scorpio', path: '/ngsi-ld/v1/types'),
+    'idm (Keyrock)' => buildUrl(subdomain: 'idm'),
+    'pep-proxy' => buildUrl(subdomain: 'pep-proxy'),
 ];
 ?>
 <!doctype html>

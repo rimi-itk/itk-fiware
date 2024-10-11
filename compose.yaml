@@ -1,6 +1,7 @@
 # https://docs.docker.com/compose/how-tos/multiple-compose-files/include/
 include:
   - compose.scorpio.yaml
+  - compose.pep-proxy.yaml
 
 networks:
   frontend:

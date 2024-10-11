@@ -1,0 +1,65 @@
+# https://quay.io/repository/fiware/scorpio
+# https://raw.githubusercontent.com/ScorpioBroker/ScorpioBroker/development-quarkus/compose-files/docker-compose-java-aaio-kafka.yml
+
+networks:
+  pep-proxy:
+  idm:
+
+services:
+  pep-proxy:
+    # https://fiware-pep-proxy.readthedocs.io/en/latest/#docker
+    image: fiware/pep-proxy
+    networks:
+      - frontend
+      - pep-proxy
+      - scorpio
+    ports:
+      - '80'
+    volumes:
+      - ./fiware-pep-proxy/config.js:/opt/fiware-pep-proxy/config.js
+    depends_on:
+      - idm
+      # - scorpio
+
+  # https://hub.docker.com/r/fiware/idm/
+  idm:
+    image: fiware/idm
+    networks:
+      - frontend
+      - idm
+      - pep-proxy
+    depends_on:
+      - idm-db
+    ports:
+      - '3000'
+      - '443'
+    environment:
+      - DEBUG=idm:*
+      - IDM_DB_HOST=idm-db
+      - IDM_HOST=http://localhost:3000
+      - IDM_PORT=3000
+      # Development use only
+      # Use Docker Secrets for Sensitive Data
+      - IDM_DB_PASS=secret
+      - IDM_DB_USER=root
+      - IDM_ADMIN_USER=admin
+      - IDM_ADMIN_EMAIL=admin@test.com
+      - IDM_ADMIN_PASS=1234
+      # If sending eMails point to any STMP server
+      - IDM_EMAIL_HOST=mailer
+      - IDM_EMAIL_PORT=25
+
+  idm-db:
+    restart: always
+    image: mysql:5.7
+    ports:
+      - '3306'
+    networks:
+      - idm
+    environment:
+      # Development use only
+      # Use Docker Secrets for Sensitive Data
+      - 'MYSQL_ROOT_PASSWORD=secret'
+      # - 'MYSQL_ROOT_HOST=172.18.1.5'
+    volumes:
+      - .docker/data/idm/db:/var/lib/mysql
