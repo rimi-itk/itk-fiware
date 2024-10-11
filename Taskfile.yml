@@ -27,3 +27,19 @@ tasks:
   compose:
     cmds:
       - '{{ .DOCKER_COMPOSE }} {{ .CLI_ARGS }}'
+
+  compose:exec:
+    cmds:
+      # https://unix.stackexchange.com/questions/762992/bash-check-if-the-standard-input-contains-anything
+      - if [[ ! -t 0 ]]; then task compose -- exec --no-TTY {{ .CLI_ARGS }}; else task compose -- exec {{ .CLI_ARGS }}; fi
+    silent: true
+
+  idm:db:cli:
+    cmds:
+      - task compose:exec -- idm-db mysql --user=root --password=secret idm
+    silent: true
+
+  idm:db:dump:
+    cmds:
+      - task compose:exec -- idm-db mysqldump --user=root --password=secret idm
+    silent: true
